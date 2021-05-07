@@ -98,7 +98,7 @@ Meteor.startup(() => {
   || Meteor.settings.config?.['autoupdate.static']?.monitors
   || [];
 
-  allwatched = allwatched.map((d) => d.trim());
+  allWatched = allWatched.map((d) => d.trim());
 
   // create fully qualified paths
   allWatched = allWatched.map((p) => path.resolve(path.join(p, 'autoupdate.json')));

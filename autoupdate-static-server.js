@@ -94,9 +94,11 @@ function fileChangeHander(filePath) {
 
 Meteor.startup(() => {
   const envMonitors = process.env.AUTOUPDATE_MONITORS;
-  let allWatched = Meteor.settings.private.autoupdate?.monitors
-  || envMonitors && envMonitors.split(',')
+  let allWatched = envMonitors && envMonitors.split(',')
+  || Meteor.settings.config?.['autoupdate.static']?.monitors
   || [];
+
+  allwatched = allwatched.map((d) => d.trim());
 
   // create fully qualified paths
   allWatched = allWatched.map((p) => path.resolve(path.join(p, 'autoupdate.json')));

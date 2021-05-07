@@ -77,7 +77,7 @@ log.newline = () => process.stdout.write('\n');
 
 function fileChangeHander(filePath) {
   return function () {
-    log(`Change detected [${new Date()}]: ${filePath}`);
+    log(`Change detected [${(new Date()).toLocaleString()}]: ${filePath}\n`);
     let autoupdate;
     try {
       autoupdate = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -87,7 +87,7 @@ function fileChangeHander(filePath) {
       log.newline();
     }
     if(!autoupdate || !validate(filePath, autoupdate)) return;
-    console.log(`[${autoupdate.appId}] version: ${autoupdate.versions['web.browser'].version}`);
+    log(`[${autoupdate.appId}] version: ${autoupdate.versions['web.browser'].version}\n`);
     AutoupdateHookOtherClient(autoupdate.appId, autoupdate);
   };
 }
@@ -103,10 +103,9 @@ Meteor.startup(() => {
 
   log(`Watching: ${allWatched}\n`);
   allWatched.forEach((watched) => {
-    // First time through load the file
-    const autoupdate = JSON.parse(fs.readFileSync(watched, 'utf8'));
-    if(!validate(watched, autoupdate)) return;
-    AutoupdateHookOtherClient(autoupdate.appId, autoupdate);
+    // watchFile does not callback if the file exists on first call
+    // but it does if the file does not exist
+    if(fs.existsSync(watched)) fileChangeHander(watched)();
     fs.watchFile(watched, fileChangeHander(watched));
   })
 });

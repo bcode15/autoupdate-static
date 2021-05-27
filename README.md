@@ -19,7 +19,7 @@ Add an entry to your `<meteor settings>.json` file, for example:
   ...
   "config": {
     "autoupdate.static": {
-      "monitors": ["path/to/static/release/1", "path/to/static/release/1"]
+      "monitors": ["path/to/static/release/1", "path/to/static/release/2"]
     }
   }
 }
@@ -30,6 +30,6 @@ Set `AUTOUPDATE_MONITORS` with a comma separated list of the release directories
 For example:
 
 ```bash
-$> export AUTOUPDATE_MONITORS="path/to/static/release/1,path/to/static/release/1"
+$> export AUTOUPDATE_MONITORS="path/to/static/release/1,path/to/static/release/2"
 ```
 Setting the `AUTOUPDATE_MONITORS` will override any values set by the the `<meteor settings>.json` file.

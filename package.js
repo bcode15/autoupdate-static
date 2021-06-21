@@ -16,11 +16,11 @@ Npm.depends({
 });
 
 Package.onUse(function(api) {
-  api.use('meteor-base');
-  api.use('autoupdate');
-  api.use('ecmascript');
-  api.export('AutoupdateStatic');
-  api.addFiles(['autoupdate-static-server.js'], 'server');
+  api.use('meteor-base', 'server');
+  api.use('autoupdate', 'server');
+  api.use('ecmascript', 'server');
+  api.export('AutoupdateStatic', 'server');
+  api.addFiles(['autoupdate-static_server.js'], 'server');
 });
 
 Package.onTest(function(api) {

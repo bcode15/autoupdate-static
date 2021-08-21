@@ -19,7 +19,6 @@ Package.onUse(function(api) {
   api.use('meteor-base', 'server');
   api.use('autoupdate', 'server');
   api.use('ecmascript', 'server');
-  api.export('AutoupdateStatic', 'server');
   api.addFiles(['autoupdate-static_server.js'], 'server');
 });
 

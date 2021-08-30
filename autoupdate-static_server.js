@@ -8,7 +8,11 @@ const schemaVersionContext = new SimpleSchema({
   'versionRefreshable': String,
   'versionNonRefreshable': String,
   'versionReplaceable': String,
-  'assets': {'type': Array},
+  // assets are ignored but they could be defined
+  'assets': {
+    'type': Array,
+    'optional': true
+  },
   'assets.$': Object,
   'assets.$.url': String
 }).newContext();

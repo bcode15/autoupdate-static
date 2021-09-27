@@ -10,15 +10,11 @@ Package.describe({
   documentation: ''
 });
 
-Npm.depends({
-  'simpl-schema': '1.12.0',
-  'lodash': '4.17.15'
-});
-
 Package.onUse(function(api) {
   api.use('meteor-base', 'server');
   api.use('autoupdate', 'server');
   api.use('ecmascript', 'server');
+  api.use('tmeasday:check-npm-versions', 'server');
   api.addFiles(['autoupdate-static_server.js'], 'server');
 });
 

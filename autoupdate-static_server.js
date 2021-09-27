@@ -1,7 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-const SimpleSchema = Npm.require('simpl-schema');
-const _ = Npm.require('lodash');
+import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
+
+checkNpmVersions({
+  'simpl-schema': '1.12.0',
+  'lodash': '4.17.21'
+}, 'brucejo:autoupdate-static');
+
+const SimpleSchema = require('simpl-schema');
+const _ = require('lodash');
 
 const schemaVersionContext = new SimpleSchema({
   'version': String,

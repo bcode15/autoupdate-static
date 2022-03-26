@@ -112,10 +112,14 @@ Meteor.startup(() => {
   || Meteor.settings.config?.['autoupdate.static']?.monitors
   || [];
 
-  allWatched = allWatched.map((d) => d.trim());
+  if(allWatched.length < 1) {
+    log('No autoupdate files being watched');
+    return;
+  }
 
   // create fully qualified paths
-  allWatched = allWatched.map((p) => path.resolve(path.join(p, 'autoupdate.json')));
+  // make sure path is trimmed
+  allWatched = allWatched.map((p) => path.resolve(path.join(p.trim(), 'autoupdate.json')));
 
   log(`Watching: ${allWatched}\n`);
   allWatched.forEach((watched) => {
@@ -123,6 +127,6 @@ Meteor.startup(() => {
     // but it does if the file does not exist
     if(fs.existsSync(watched)) fileChangeHander(watched)();
     fs.watchFile(watched, fileChangeHander(watched));
-  })
+  });
 });
 

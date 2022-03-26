@@ -32,6 +32,8 @@ const schemaAutoupdateContext = new SimpleSchema({
   'appId': String
 }).newContext();
 
+const expectedKeys = ['web.browser', 'web.browser.legacy', 'web.cordova'];
+
 function validate(path, fileData) {
   const autoupdate = _.pick(fileData, ['versions', 'appId']);
 
@@ -49,21 +51,22 @@ function validate(path, fileData) {
 
   // Make sure expected keys are in autoupdate.versions
   const versionKeys = _.keys(autoupdate.versions);
-  const expectedKeys = ['web.browser', 'web.browser.legacy', 'web.cordova'];
+  // make sure versionKeys are in the expectedKeys set
   if(_.difference(versionKeys, expectedKeys).length > 0) {
     console.error(`Expected ${expectedKeys} in autoupdate.versions, found: ${versionKeys}, ignoring`);
     return false;
   }
 
   // finally check version keys
-  expectedKeys.forEach((k) => {
+  for(const k of versionKeys) {
     schemaVersionContext.validate(autoupdate.versions[k])
     if(!schemaVersionContext.isValid()) {
       console.error(`${path}: did not pass schema validation, ignoring`);
       console.error(schemaVersionContext.validationErrors());
       return false;
     }
-  });
+  }
+
   return true;
 }
 

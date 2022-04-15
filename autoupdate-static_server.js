@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 
@@ -130,3 +130,38 @@ Meteor.startup(() => {
   });
 });
 
+// Monitor any updates to app configuration
+// let autoupdateCache;
+// WebApp.addUpdatedNotifyHook(({runtimeConfig}) => {
+//   if(!Meteor.isDevelopment) return;
+//   // for development builds
+//   // if we have a new autoupdate & it is different than the one on
+//   // disk, then write out a new one (when we write a new one meteor will restart)
+//   const autoupdate = _.cloneDeep(runtimeConfig.autoupdate);
+//   // versionHmr is restart dependent not build dependent
+//   // it is only used during development
+//   // not necessary for static files
+//   // remove it
+//   ['web.browser', 'web.browser.legacy', 'web.cordova'].forEach((arch) => {
+//     delete autoupdate?.versions?.[arch]?.versionHmr;
+//   });
+
+//   if(_.isEqual(autoupdateCache, autoupdate)) return;
+//   autoupdateCache = autoupdate;
+
+//   // projRoot is prior to .meteor directory
+//   const projRoot = cwd = process.cwd().split('/.meteor')[0];
+//   const autoupdatePath = projRoot + `/private/mstatic/autoupdate.json`;
+//   let currentAutoupdate;
+//   try {
+//     currentAutoupdate = fs.readFileSync(autoupdatePath, {encoding: 'utf-8'});
+//   } catch(e) {
+//     if(e.code !== 'ENOENT') throw new Error(e);
+//     Meris.log.info(`Autoupdate creating: ${autoupdatePath}`);
+//   }
+
+//   if(currentAutoupdate && _.isEqual(autoupdateCache, JSON.parse(currentAutoupdate))) return;
+
+//   console.warn(`RESTARTING: autoupdate updated at ${autoupdatePath}`, autoupdateCache);
+//   fs.outputFileSync(autoupdatePath, JSON.stringify(autoupdateCache));
+// });

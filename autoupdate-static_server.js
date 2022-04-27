@@ -71,7 +71,7 @@ function validate(path, fileData) {
 }
 
 function log(str) {
-  process.stdout.write('AutoupdateStatic: ' + str);
+  process.stdout.write('AutoupdateStatic: ' + str + '\n');
 }
 
 log.newline = () => process.stdout.write('\n');

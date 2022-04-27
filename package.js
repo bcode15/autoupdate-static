@@ -1,6 +1,6 @@
 Package.describe({
   name: 'brucejo:autoupdate-static',
-  version: '0.1.0',
+  version: '0.1.1',
   // Brief, one-line summary of the package.
   summary: 'Enables autoupdate for staticly served websites',
   // URL to the Git repository containing the source code for this package.

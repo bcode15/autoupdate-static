@@ -11,6 +11,7 @@ Package.describe({
 });
 
 Package.onUse(function(api) {
+  api.use('webapp', 'server');
   api.use('autoupdate', 'server');
   api.use('ecmascript', 'server');
   api.use('tmeasday:check-npm-versions', 'server');

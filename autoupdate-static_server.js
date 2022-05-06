@@ -1,41 +1,58 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
+import { AutoupdateHookOtherClient } from 'meteor/autoupdate';
+import { WebApp } from 'meteor/webapp';
 
-checkNpmVersions({
-  'simpl-schema': '1.12.0',
-  'lodash': '4.17.21'
-}, 'brucejo:autoupdate-static');
+checkNpmVersions(
+  {
+    'simpl-schema': '1.12.0',
+    lodash: '4.17.21'
+  },
+  'brucejo:autoupdate-static'
+);
 
 const SimpleSchema = require('simpl-schema');
 const _ = require('lodash');
 
 const schemaVersionContext = new SimpleSchema({
-  'version': String,
-  'versionRefreshable': String,
-  'versionNonRefreshable': String,
-  'versionReplaceable': String,
+  version: String,
+  versionRefreshable: String,
+  versionNonRefreshable: String,
+  versionReplaceable: String,
   // assets are ignored but they could be defined
-  'assets': {
-    'type': Array,
-    'optional': true
+  assets: {
+    type: Array,
+    optional: true
   },
   'assets.$': Object,
   'assets.$.url': String
 }).newContext();
 
 const schemaAutoupdateContext = new SimpleSchema({
-  'versions': {
-    'type': Object,
-    'blackbox': true
+  versions: {
+    type: Object,
+    blackbox: true
   },
-  'appId': String
+  appId: String
 }).newContext();
 
-const expectedKeys = ['web.browser', 'web.browser.legacy', 'web.cordova'];
+const PRFX = 'AutoupdateStatic:';
+/* eslint-disable no-console */
+const log = (...args) => console.log(PRFX, ...args);
+/* eslint-disable no-console */
+const error = (...args) => console.error(PRFX, ...args);
 
-function validate(path, fileData) {
-  const autoupdate = _.pick(fileData, ['versions', 'appId']);
+const expectedKeys = ['web.browser', 'web.browser.legacy', 'web.cordova'];
+/**
+ * validate the autoupdate schema
+ *
+ * @param {string} path - path to file, used for error strings
+ * @param {any} aUpdateObject - autoupdate object to be validated
+ * @returns {boolean} - true if valid object, false otherwise
+ */
+function validate(path, aUpdateObject) {
+  const autoupdate = _.pick(aUpdateObject, ['versions', 'appId']);
 
   // Simpl-Schema does not support dotted keynames (e.g. 'web.browser')
   // So need to validate in 2 steps
@@ -43,26 +60,26 @@ function validate(path, fileData) {
   // Validate the top level object
   schemaAutoupdateContext.validate(autoupdate);
 
-  if(!schemaAutoupdateContext.isValid()) {
-    console.error(`${path}: did not pass schema validation, ignoring`);
-    console.error(schemaAutoupdateContext.validationErrors());
+  if (!schemaAutoupdateContext.isValid()) {
+    error(`${path}: did not pass schema validation, ignoring`);
+    error(schemaAutoupdateContext.validationErrors());
     return false;
   }
 
   // Make sure expected keys are in autoupdate.versions
   const versionKeys = _.keys(autoupdate.versions);
   // make sure versionKeys are in the expectedKeys set
-  if(_.difference(versionKeys, expectedKeys).length > 0) {
-    console.error(`Expected ${expectedKeys} in autoupdate.versions, found: ${versionKeys}, ignoring`);
+  if (_.difference(versionKeys, expectedKeys).length > 0) {
+    error(`Expected ${expectedKeys} in autoupdate.versions, found: ${versionKeys}, ignoring`);
     return false;
   }
 
   // finally check version keys
-  for(const k of versionKeys) {
-    schemaVersionContext.validate(autoupdate.versions[k])
-    if(!schemaVersionContext.isValid()) {
-      console.error(`${path}: did not pass schema validation, ignoring`);
-      console.error(schemaVersionContext.validationErrors());
+  for (const k of versionKeys) {
+    schemaVersionContext.validate(autoupdate.versions[k]);
+    if (!schemaVersionContext.isValid()) {
+      error(`${path}: did not pass schema validation, ignoring`);
+      error(schemaVersionContext.validationErrors());
       return false;
     }
   }
@@ -70,49 +87,48 @@ function validate(path, fileData) {
   return true;
 }
 
-function log(str) {
-  process.stdout.write('AutoupdateStatic: ' + str + '\n');
-}
-
-log.newline = () => process.stdout.write('\n');
-
 /*
  * Monitor the autoupdate.json file in the release location
  * when the file updates update the autoupdate parameters for this appId
- * 
+ *
  * Directories to monitor are taken from (in priority order):
  * Meteor.private.autoupdate.monitors (array of strings)
- * process.env.AUTOUPDATE_MONITORS (',' separated list) 
- * 
+ * process.env.AUTOUPDATE_MONITORS (',' separated list)
+ *
  * Each monitored directory is looking for an autoupdate.json file
  * The expected format of the autoupdate.json file is:
- * 
+ *
  */
 
+/**
+ * Closure function that returns the watched files handler function
+ *
+ * @param {string} filePath - path to the file that has changed
+ * @returns {() => void} -
+ */
 function fileChangeHander(filePath) {
   return function () {
-    log(`Change detected [${(new Date()).toLocaleString()}]: ${filePath}\n`);
+    log(`Change detected [${new Date().toLocaleString()}]: ${filePath}\n`);
     let autoupdate;
     try {
       autoupdate = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     } catch (e) {
       // onerror noop
-      // output logging '\n\
-      log.newline();
+      // log it
+      error(`Error parsing autoupdate.json`, e);
     }
-    if(!autoupdate || !validate(filePath, autoupdate)) return;
-    log(`[${autoupdate.appId}] version: ${autoupdate.versions['web.browser'].version}\n`);
+    if (!autoupdate || !validate(filePath, autoupdate)) return;
+    log(`[${autoupdate.appId}] version: ${autoupdate.versions?.['web.browser']?.version}\n`);
     AutoupdateHookOtherClient(autoupdate.appId, autoupdate);
   };
 }
 
 Meteor.startup(() => {
   const envMonitors = process.env.AUTOUPDATE_MONITORS;
-  let allWatched = envMonitors && envMonitors.split(',')
-  || Meteor.settings.config?.['autoupdate.static']?.monitors
-  || [];
+  let allWatched =
+    (envMonitors && envMonitors.split(',')) || Meteor.settings.config?.['autoupdate.static']?.monitors || [];
 
-  if(allWatched.length < 1) {
+  if (allWatched.length < 1) {
     log('No autoupdate files being watched');
     return;
   }
@@ -125,7 +141,49 @@ Meteor.startup(() => {
   allWatched.forEach((watched) => {
     // watchFile does not callback if the file exists on first call
     // but it does if the file does not exist
-    if(fs.existsSync(watched)) fileChangeHander(watched)();
+    // if the file exists then force a call to the handler
+    if (fs.existsSync(watched)) fileChangeHander(watched)();
+    // from here on out the registered handler will be called by watchFile
     fs.watchFile(watched, fileChangeHander(watched));
   });
 });
+
+const autoupdatePath = process.env.AUTOUPDATE_EMITPATH || Meteor.settings.config?.['autoupdate.static']?.emit;
+
+if (autoupdatePath) {
+  // Monitor any updates to app configuration
+  let autoupdateCache;
+  WebApp.addUpdatedNotifyHook(({ runtimeConfig }) => {
+    // for development builds only
+    if (!Meteor.isDevelopment) return;
+    // if we have a new autoupdate & it is different than the one on
+    // disk, then write out a new one (when we write a new one meteor will restart)
+    const autoupdate = _.cloneDeep(runtimeConfig.autoupdate);
+    // Ignore all updates that have empty versions
+    if (!autoupdate.versions || Object.keys(autoupdate.versions).length === 0) return;
+    // versionHmr is restart dependent not build dependent
+    // it is only used during development not necessary for autoupdate files
+    // remove it
+    ['web.browser', 'web.browser.legacy', 'web.cordova'].forEach((arch) => {
+      delete autoupdate?.versions?.[arch]?.versionHmr;
+    });
+
+    if (_.isEqual(autoupdateCache, autoupdate)) return;
+    autoupdateCache = autoupdate;
+
+    let currentAutoupdate;
+    const autoupdateFile = path.join(autoupdatePath, 'autoupdate.json');
+    try {
+      currentAutoupdate = fs.readFileSync(autoupdateFile, { encoding: 'utf-8' });
+    } catch (e) {
+      if (e.code !== 'ENOENT') throw new Error(e);
+      log(`Autoupdate creating: ${autoupdateFile}`);
+    }
+
+    // No autoupdate change to disk version, bail
+    if (currentAutoupdate && _.isEqual(autoupdateCache, JSON.parse(currentAutoupdate))) return;
+
+    log(`Updating ${autoupdateFile}`, autoupdateCache);
+    fs.outputFileSync(autoupdateFile, JSON.stringify(autoupdateCache));
+  });
+}

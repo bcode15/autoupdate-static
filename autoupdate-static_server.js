@@ -111,8 +111,14 @@ function fileChangeHander(filePath) {
     log(`Change detected [${new Date().toLocaleString()}]: ${filePath}\n`);
     let autoupdate;
     try {
-      autoupdate = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const json = fs.readFileSync(filePath, 'utf8');
+      autoupdate = JSON.parse(json);
     } catch (e) {
+      // handle case where file does not exist
+      if(e.code === 'ENOENT') {
+        log(`${filePath} not found`);
+        return;
+      }
       // onerror noop
       // log it
       error(`Error parsing autoupdate.json`, e);

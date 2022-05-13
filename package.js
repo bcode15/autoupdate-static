@@ -1,5 +1,5 @@
 Package.describe({
-  name: 'brucejo:autoupdate-static',
+  name: 'bcode15:autoupdate-static',
   version: '0.1.2',
   // Brief, one-line summary of the package.
   summary: 'Enables autoupdate for staticly served websites',

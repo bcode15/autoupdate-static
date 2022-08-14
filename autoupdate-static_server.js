@@ -6,7 +6,7 @@ import { WebApp } from 'meteor/webapp';
 
 checkNpmVersions(
   {
-    'simpl-schema': '1.12.0',
+    'simpl-schema': '1.12.3',
     lodash: '4.17.21'
   },
   'brucejo:autoupdate-static'

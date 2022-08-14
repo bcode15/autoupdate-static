@@ -1,6 +1,6 @@
 Package.describe({
   name: 'bcode15:autoupdate-static',
-  version: '0.1.2',
+  version: '0.1.3',
   // Brief, one-line summary of the package.
   summary: 'Enables autoupdate for staticly served websites',
   // URL to the Git repository containing the source code for this package.

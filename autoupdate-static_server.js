@@ -1,19 +1,22 @@
+/* eslint-disable no-console */
+import { Meteor } from 'meteor/meteor';
 import fs from 'fs-extra';
 import path from 'path';
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 import { AutoupdateHookOtherClient } from 'meteor/autoupdate';
 import { WebApp } from 'meteor/webapp';
+/* global process console */
 
 checkNpmVersions(
   {
-    'simpl-schema': '1.12.3',
+    'simpl-schema': '3.4.4',
     lodash: '4.17.21'
   },
   'brucejo:autoupdate-static'
 );
 
-const SimpleSchema = require('simpl-schema');
-const _ = require('lodash');
+import SimpleSchema from 'simpl-schema';
+import _ from 'lodash';
 
 const schemaVersionContext = new SimpleSchema({
   version: String,
@@ -38,9 +41,7 @@ const schemaAutoupdateContext = new SimpleSchema({
 }).newContext();
 
 const PRFX = 'AutoupdateStatic:';
-/* eslint-disable no-console */
 const log = (...args) => console.log(PRFX, ...args);
-/* eslint-disable no-console */
 const error = (...args) => console.error(PRFX, ...args);
 
 const expectedKeys = ['web.browser', 'web.browser.legacy', 'web.cordova'];
@@ -115,7 +116,7 @@ function fileChangeHander(filePath) {
       autoupdate = JSON.parse(json);
     } catch (e) {
       // handle case where file does not exist
-      if(e.code === 'ENOENT') {
+      if (e.code === 'ENOENT') {
         log(`${filePath} not found`);
         return;
       }

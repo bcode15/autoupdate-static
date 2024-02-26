@@ -1,6 +1,7 @@
+/* global Package */
 Package.describe({
   name: 'bcode15:autoupdate-static',
-  version: '0.1.3',
+  version: '0.1.4',
   // Brief, one-line summary of the package.
   summary: 'Enables autoupdate for staticly served websites',
   // URL to the Git repository containing the source code for this package.
@@ -10,7 +11,7 @@ Package.describe({
   documentation: ''
 });
 
-Package.onUse(function(api) {
+Package.onUse(function (api) {
   api.use('webapp', 'server');
   api.use('autoupdate', 'server');
   api.use('ecmascript', 'server');
@@ -18,7 +19,7 @@ Package.onUse(function(api) {
   api.addFiles(['autoupdate-static_server.js'], 'server');
 });
 
-Package.onTest(function(api) {
+Package.onTest(function (api) {
   api.use('ecmascript');
   api.use('tinytest');
 });
